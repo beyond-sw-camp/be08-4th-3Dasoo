@@ -96,4 +96,38 @@ pipeline {
             }
         }
     }
+    
+    post {
+        // 성공 시
+        // 텍스트 형태의 크레덴셜 가져옴
+        // discord-webhook id에 해당하는 시크릿 텍스트 가져와서
+        // DISCORD라는 환경변수에 담아줌
+        // discordSend => 플러그인
+        // webhookURL: "${DISCORD}" <=> variable: 'DISCORD'
+        success {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+        // 빌드 실패 시 실행될 작업
+        failure {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+    }
 }
