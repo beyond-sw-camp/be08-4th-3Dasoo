@@ -51,9 +51,11 @@ pipeline {
         stage('Docker Image Build'){
             steps {
                 container('docker'){
-                    sh 'docker -v'
-                    sh 'docker build --no-cache -t fourstit-back:3.0 ./'
-                    sh 'docker image inspect fourstit-back:3.0'
+                    dir('devopsBackend') {
+                        sh 'docker -v'
+                        sh 'docker build --no-cache -t fourstit-back:3.0 ./'
+                        sh 'docker image inspect fourstit-back:3.0'
+                    }
                 }
             }
         }
