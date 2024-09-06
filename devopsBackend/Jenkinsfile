@@ -21,6 +21,11 @@ pipeline {
                 volumeMounts:
                 - mountPath: "/var/run/docker.sock"
                   name: docker-socket
+              - name: kubectl
+                image: gcr.io/cloud-builders/kubectl
+                command:
+                - cat
+                tty: true
               volumes:
               - name: docker-socket
                 hostPath:
@@ -71,6 +76,21 @@ pipeline {
                             }
                         }
                         sh 'docker logout'
+                    }
+                }
+            }
+        }
+        stage('Deployment'){
+            steps{
+                container('kubectl'){
+                    script {
+                        def dockerImageTag = "${env.BUILD_NUMBER}"
+
+                        echo "DockerImageTag : ${dockerImageTag}"
+                        
+                        withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                            sh 'kubectl set image deploy fourstit-back-deploy uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG -n default'
+                        }
                     }
                 }
             }
