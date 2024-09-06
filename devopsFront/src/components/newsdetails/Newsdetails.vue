@@ -76,7 +76,7 @@ export default {
     async fetchNewsDetail() {
       try {
         const newsNo = this.$route.params.newsNo;
-        const response = await axios.get(`http://localhost:8080/api/detail/${newsNo}`);
+        const response = await axios.get(`http://localhost:30031/api/detail/${newsNo}`);
         console.log('News data:', response.data);
         this.news = response.data;
       } catch (error) {
