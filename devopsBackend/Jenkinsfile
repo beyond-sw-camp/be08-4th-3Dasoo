@@ -51,19 +51,27 @@ pipeline {
         stage('Docker Image Build'){
             steps {
                 container('docker'){
-                    sh 'docker logout'
-                    withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
-                        usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
-                            sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                    }
+                    script {
+                        def dockerImageTag = "${env.BUILD_NUMBER}"
 
-                    dir('devopsBackend') {
-                        sh 'docker -v'
-                        sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-2.0 ./'
-                        sh 'docker image inspect uzz99/samdasu_repo:fourstit-back-2.0'
-                        sh 'docker push uzz99/samdasu_repo:fourstit-back-2.0'
+                        echo "DockerImageTag : ${dockerImageTag}"
+
+                        sh 'docker logout'
+                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
+                            usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
+                                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                        }
+
+                        dir('devopsBackend') {
+                            withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                                sh 'docker -v'
+                                sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG ./'
+                                sh 'docker image inspect uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG'
+                                sh 'docker push uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG'
+                            }
+                        }
+                        sh 'docker logout'
                     }
-                    sh 'docker logout'
                 }
             }
         }
