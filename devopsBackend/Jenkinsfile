@@ -39,7 +39,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                container{
+                container('gradle'){
                     dir('devopsBackend') {
                         sh './gradlew clean build -x test'
                     }
