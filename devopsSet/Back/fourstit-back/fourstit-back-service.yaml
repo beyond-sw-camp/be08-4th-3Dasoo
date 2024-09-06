@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fourstit-back-service
+spec:
+  type: NodePort
+  selector:
+    app: fourstit-back-label
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30031

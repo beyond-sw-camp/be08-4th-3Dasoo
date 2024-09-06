@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fourstit-front-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fourstit-front-label
+  template:
+    metadata:
+      labels:
+        app: fourstit-front-label
+    spec:
+      containers:
+      - name: nginx
+        image: fourstit-front:1.3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 80

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fourstit-back-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fourstit-back-label
+  template:
+    metadata:
+      # name: department-pod #기본적으로 생성되는 이름
+      labels:
+        app: fourstit-back-label
+    spec:
+      containers:
+      - name: fourstit-back
+        image: fourstit-back:1.2
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 8080

@@ -1,0 +1,124 @@
+/* Header */
+
+.bg-navbar {
+    background-color: #6096B4 !important;
+    border-radius: 0;
+    height: 30px;
+}
+
+.custom-navbar .navbar-nav .nav-link {
+    color: white; 
+}
+
+/* 버튼 컬러 */
+.custom-navbar .navbar-toggler-icon {
+    background-color: white; 
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    width: 90%; 
+}
+
+.search-txt {
+    border-radius: 0.25rem;
+    border: 1px;
+    padding: 0.5rem;
+    font-size: 13px;
+    flex: 1;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    color: white;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.search-button:hover {
+    opacity: 0.7;
+}
+
+#search {
+    flex: 1;
+    margin-left: 100px;
+}
+
+/* Footer */
+footer {
+    background-color: #6096B4;
+    color: #fff;
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.footer-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.footer-logo, .footer-links, .footer-contact, .footer-copyright {
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    margin: 0;
+}
+
+.footer-links {
+    flex: 1;
+}
+
+.footer-contact {
+    flex: 1.2;
+}
+
+.footer-logo img {
+    max-height: 50px;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    text-align: left;
+    gap: 15px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.footer-contact p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.footer-contact a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.footer-copyright {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    text-align: center;
+}
