@@ -44,7 +44,10 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Npm Install') {
+            when {
+                changeset "**/devopsFront/**"
+            }
             steps {
                 container('node') {
                     dir('devopsFront') {
@@ -55,6 +58,9 @@ pipeline {
         }
 
         stage('Build Frontend') {
+            when {
+                changeset "**/devopsFront/**"
+            }
             steps {
                 container('node') {
                     dir('devopsFront') {
