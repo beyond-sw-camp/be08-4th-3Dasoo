@@ -43,6 +43,9 @@ pipeline {
         }
 
         stage('Build Backend') {
+            when {
+                changeset "**/devopsBackend/**"
+            }
             steps {
                 container('gradle'){
                     dir('devopsBackend') {
