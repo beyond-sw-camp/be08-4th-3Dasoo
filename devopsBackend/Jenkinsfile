@@ -51,11 +51,19 @@ pipeline {
         stage('Docker Image Build'){
             steps {
                 container('docker'){
+                    sh 'docker logout'
+                    withCredentials([usernamePassword(CredentialsId: 'samdasu-dockerhub-access', 
+                        usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
+                            sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
+
                     dir('devopsBackend') {
                         sh 'docker -v'
-                        sh 'docker build --no-cache -t fourstit-back:3.0 ./'
-                        sh 'docker image inspect fourstit-back:3.0'
+                        sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-2.0 ./'
+                        sh 'docker image inspect uzz99/samdasu_repo:fourstit-back-2.0'
+                        sh 'docker push uzz99/samdasu_repo:fourstit-back-2.0'
                     }
+                    sh 'docker logout'
                 }
             }
         }
