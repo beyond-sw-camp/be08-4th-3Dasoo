@@ -89,7 +89,7 @@ pipeline {
                         echo "DockerImageTag : ${dockerImageTag}"
                         
                         withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
-                            sh 'kubectl set image deploy fourstit-back-deploy uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG -n default'
+                            sh 'kubectl set image deploy fourstit-back-deploy fourstit-back=uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG -n default'
                         }
                     }
                 }
