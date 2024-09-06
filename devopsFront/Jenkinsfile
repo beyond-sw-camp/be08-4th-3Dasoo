@@ -114,7 +114,7 @@ pipeline {
     
     post {
         success {
-            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORDFront')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
@@ -122,12 +122,12 @@ pipeline {
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
-                webhookURL: "${DISCORD}"
+                webhookURL: "${DISCORDFront}"
             }
         }
 
         failure {
-            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORDFront')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
@@ -135,7 +135,7 @@ pipeline {
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
-                webhookURL: "${DISCORD}"
+                webhookURL: "${DISCORDFront}"
             }
         }
     }
