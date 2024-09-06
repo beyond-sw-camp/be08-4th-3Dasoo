@@ -52,7 +52,7 @@ pipeline {
             steps {
                 container('docker'){
                     sh 'docker logout'
-                    withCredentials([usernamePassword(CredentialsId: 'samdasu-dockerhub-access', 
+                    withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
                         usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
                             sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                     }
