@@ -4,8 +4,6 @@ pipeline {
         // 파이프 라인의 각 단게를 관리
         stage('Checkout') {
             steps{
-                // 모든 프로젝트는 checkout부터 시작
-                // Github에서 소스코드를 체크아웃하는 단계
                 git branch: 'main', 
                     credentialsId: 'github_access_ssh_samdasu',
                     url: 'git@github.com:uzz99/Samdasu-Devops.git'
