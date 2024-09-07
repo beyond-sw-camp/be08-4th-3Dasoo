@@ -46,7 +46,7 @@ pipeline {
 
         stage('Npm Install') {
             when {
-                changeset "**/devopsFront/**"
+                changeset "/devopsFront/**"
             }
             steps {
                 container('node') {
@@ -59,7 +59,7 @@ pipeline {
 
         stage('Build Frontend') {
             when {
-                changeset "**/devopsFront/**"
+                changeset "/devopsFront/**"
             }
             steps {
                 container('node') {
