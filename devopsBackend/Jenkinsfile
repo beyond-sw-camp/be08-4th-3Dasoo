@@ -36,7 +36,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps{
-                git branch: 'main', 
+                git branch: 'back', 
                     credentialsId: 'github_access_ssh_samdasu',
                     url: 'git@github.com:uzz99/Samdasu-Devops.git'
             }
