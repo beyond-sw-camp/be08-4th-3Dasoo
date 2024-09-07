@@ -44,26 +44,16 @@ pipeline {
             }
         }
 
-        stage('Npm Install') {
+        stage('Npm install & Build Frontend') {
             when {
                 changeset "devopsFront/**"
             }
             steps {
                 container('node') {
                     dir('devopsFront') {
-                        sh 'npm i'
-                    }
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            when {
-                changeset "devopsFront/**"
-            }
-            steps {
-                container('node') {
-                    dir('devopsFront') {
+                        cache(path: 'node_modules') {
+                            sh 'npm install'
+                        }
                         sh 'npm run build'
                     }
                 }
