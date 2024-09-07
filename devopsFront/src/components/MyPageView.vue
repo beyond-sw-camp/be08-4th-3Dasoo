@@ -136,7 +136,7 @@ export default {
     methods: {
         async fetchUserInfo(userNo) {
             try {
-                const response = await axios.get(`http://localhost:8080/api/myinfo/${userNo}`);
+                const response = await axios.get(`http://localhost:30031/api/myinfo/${userNo}`);
                 this.form = response.data; // 응답받은 데이터를 form에 저장
                 this.form.id = userNo; // 숫자형 userNo를 저장
                 this.form.interest = this.form.interest.map(Number); // 관심사를 숫자형으로 변환
@@ -150,7 +150,7 @@ export default {
             try {
                 const userNo = parseInt(this.form.id, 10); // form.id를 숫자형으로 변환
                 if (!isNaN(userNo)) {
-                    await axios.put(`http://localhost:8080/api/myinfo/updateUserInfo/${userNo}`, {
+                    await axios.put(`http://localhost:30031/api/myinfo/updateUserInfo/${userNo}`, {
                         name: this.form.name,
                         email: this.form.email,
                         phone: this.form.phone,
@@ -178,7 +178,7 @@ export default {
             try {
                 const userNo = parseInt(this.form.id, 10); // form.id를 숫자형으로 변환
                 if (!isNaN(userNo)) {
-                    await axios.put(`http://localhost:8080/api/myinfo/updateInterest/${userNo}`, this.form.interest);
+                    await axios.put(`http://localhost:30031/api/myinfo/updateInterest/${userNo}`, this.form.interest);
                     // 알람을 표시하지 않고 바로 저장합니다.
                 } else {
                     console.error('유효하지 않은 userNo:', this.form.id);
@@ -196,7 +196,7 @@ export default {
             try {
                 const userNo = parseInt(this.form.id, 10); // form.id를 숫자형으로 변환
                 if (!isNaN(userNo)) {
-                    await axios.put(`http://localhost:8080/api/myinfo/updatePwd/${userNo}`, null, {
+                    await axios.put(`http://localhost:30031/api/myinfo/updatePwd/${userNo}`, null, {
                         params: {
                             currentPassword: this.passwordForm.currentPassword,
                             newPassword: this.passwordForm.newPassword,
