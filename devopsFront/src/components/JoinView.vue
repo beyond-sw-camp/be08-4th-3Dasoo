@@ -190,7 +190,7 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get('http://localhost:8080/api/categories');
+        const response = await axios.get('http://localhost:30031/api/categories');
         this.categories = response.data;
       } catch (error) {
         console.error('카테고리 데이터를 불러오는 중 오류가 발생했습니다:', error);
@@ -202,7 +202,7 @@ export default {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:8080/api/user/check-userid', {
+        const response = await axios.get('http://localhost:30031/api/user/check-userid', {
           params: { userId: this.form.id },
         });
         this.isUsernameDuplicate = response.data;
@@ -226,7 +226,7 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:8080/api/join', this.form);
+        const response = await axios.post('http://localhost:30031/api/join', this.form);
 
         if (response.status === 201) {
           Swal.fire({
