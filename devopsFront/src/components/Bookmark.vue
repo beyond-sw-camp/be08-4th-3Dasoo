@@ -48,7 +48,7 @@
           const userStore = useUserStore();
           const userNo = userStore.user.userNo;
           const response = await axios.get(
-            `http://localhost:8080/api/bookmark/${userNo}`
+            `http://localhost:30031/api/bookmark/${userNo}`
           );
           this.bookmarkList = response.data;
         } catch (error) {
