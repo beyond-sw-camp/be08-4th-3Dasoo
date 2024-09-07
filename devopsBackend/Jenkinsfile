@@ -55,7 +55,7 @@ pipeline {
                 }
             }
         }
-
+//test
         stage('Docker Image Build'){
             when {
                 changeset "devopsBackend/**"
