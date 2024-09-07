@@ -36,8 +36,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps{
-                credentialsId: 'github_access_ssh_samdasu',
-                url: 'git@github.com:uzz99/Samdasu-Devops.git'
+                git branch: 'back', 
+                    credentialsId: 'github_access_ssh_samdasu',
+                    url: 'git@github.com:uzz99/Samdasu-Devops.git'
             }
         }
 
@@ -112,7 +113,6 @@ pipeline {
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
-                Docker 이미지 태그: fourstit-back-${env.BUILD_NUMBER}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
