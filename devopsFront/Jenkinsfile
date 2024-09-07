@@ -60,6 +60,9 @@ pipeline {
         }
 
         stage('Docker Image Build') {
+            when {
+                changeset "devopsFront/**"
+            }
             steps {
                 container('docker') {
                     script {
@@ -86,6 +89,9 @@ pipeline {
             }
         }
         stage('Deployment'){
+            when {
+                changeset "devopsFront/**"
+            }
             steps{
                 container('kubectl'){
                     script {
