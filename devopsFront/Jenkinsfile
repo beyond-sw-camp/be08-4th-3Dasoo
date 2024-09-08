@@ -50,6 +50,7 @@ pipeline {
             steps {
                 container('node') {
                     dir('devopsFront') {
+                        echo "In devopsFront directory"
                         // cache(path: 'node_modules') {
                         sh 'npm install'
                         // }
