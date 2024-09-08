@@ -37,8 +37,6 @@ pipeline {
     environment {
         GIT_BRANCH = 'back'
         DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
-        GITHUB_USER = credentials('github_personal_access_token')
-        GITHUB_TOKEN = credentials('github_personal_access_token')
         DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
     }
 
