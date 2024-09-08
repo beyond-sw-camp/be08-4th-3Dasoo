@@ -50,7 +50,7 @@ pipeline {
             steps {
                 container('node') {
                     dir('devopsFront') {
-                        echo "Build devopsFront"
+                        echo "Build devopsFront Test"
                         sh 'npm install'
                         sh 'npm run build'
                     }
