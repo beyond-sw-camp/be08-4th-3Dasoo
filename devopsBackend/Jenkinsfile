@@ -49,6 +49,8 @@ pipeline {
             steps {
                 container('gradle'){
                     dir('devopsBackend') {
+                        echo "Build devopsBackend Test"
+
                         sh 'chmod +x ./gradlew'
                         sh './gradlew clean build -x test'
                     }
@@ -113,6 +115,7 @@ pipeline {
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
+                Docker 이미지 태그 생성: fourstit-back-${env.BUILD_NUMBER}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
