@@ -33,10 +33,17 @@ pipeline {
             '''
         }
     }
+
+    environment {
+        GIT_BRANCH = 'back'
+        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
+    }
+
     stages {
         stage('Checkout') {
             steps{
-                git branch: 'back', 
+                git branch: "${GIT_BRANCH}", 
                     credentialsId: 'github_access_ssh_samdasu',
                     url: 'git@github.com:uzz99/Samdasu-Devops.git'
             }
@@ -65,9 +72,7 @@ pipeline {
             steps {
                 container('docker'){
                     script {
-                        def dockerImageTag = "${env.BUILD_NUMBER}"
-
-                        echo "DockerImageTag : ${dockerImageTag}"
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
 
                         sh 'docker logout'
                         withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
@@ -76,7 +81,7 @@ pipeline {
                         }
 
                         dir('devopsBackend') {
-                            withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                            withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
                                 sh 'docker -v'
                                 sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG ./'
                                 sh 'docker image inspect uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG'
@@ -96,11 +101,10 @@ pipeline {
             steps{
                 container('kubectl'){
                     script {
-                        def dockerImageTag = "${env.BUILD_NUMBER}"
 
-                        echo "DockerImageTag : ${dockerImageTag}"
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
                         
-                        withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                        withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
                             sh 'kubectl set image deploy fourstit-back-deploy fourstit-back=uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG -n default'
                         }
                     }
@@ -111,21 +115,18 @@ pipeline {
         stage('Create Auto PR') {
             steps {
                 script {
-                    def branch = 'back'
-                    def dockerImageTag = "${env.BUILD_NUMBER}"
-
-                withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
-                usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                    sh """
-                    git config user.name "$GITHUB_USER"
-                    git config user.email "yj.lee991228@gmail.com"
-                    git checkout back
-                    git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
-                    git push origin back
-                    curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImageTag ${dockerImageTag}", "head":"back", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
+                    usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                        sh """
+                        git config user.name "$GITHUB_USER"
+                        git config user.email "yj.lee991228@gmail.com"
+                        git checkout ${GIT_BRANCH}
+                        git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
+                        git push origin ${GIT_BRANCH}
+                        curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImageTag ${DOCKER_IMAGE_TAG}", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
+                        """
                     }
-                    echo "PR 생성 완료"
+                    echo "[Samdasu-Back] PR 생성 완료"
                 }
             }
         }
