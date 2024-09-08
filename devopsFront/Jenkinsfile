@@ -34,10 +34,17 @@ pipeline {
             '''
         }
     }
+
+    environment {
+        GIT_BRANCH = 'front'
+        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
+    }
+
     stages {
         stage('Checkout') {
             steps{
-                git branch: 'front', 
+                git branch: "${GIT_BRANCH}", 
                     credentialsId: 'github_access_ssh_samdasu',
                     url: 'git@github.com:uzz99/Samdasu-Devops.git'
             }
@@ -65,9 +72,7 @@ pipeline {
             steps {
                 container('docker') {
                     script {
-                        def dockerImageTag = "${env.BUILD_NUMBER}"
-
-                        echo "DockerImageTag : ${dockerImageTag}"
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
 
                         sh 'docker logout'
                         withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
@@ -76,7 +81,7 @@ pipeline {
                         }
 
                         dir('devopsFront') {
-                            withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                            withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
                                 sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG ./'
                                 sh 'docker image inspect uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
                                 sh 'docker push uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
@@ -94,10 +99,9 @@ pipeline {
             steps{
                 container('kubectl'){
                     script {
-                        def dockerImageTag = "${env.BUILD_NUMBER}"
-                        echo "DockerImageTag : ${dockerImageTag}"
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
                         
-                        withEnv(["DOCKER_IMAGE_TAG=${dockerImageTag}"]){
+                        withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
                             sh 'kubectl set image deploy fourstit-front-deploy nginx=uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG -n default'
                         }
                     }
@@ -108,19 +112,16 @@ pipeline {
         stage('Create Auto PR') {
             steps {
                 script {
-                    def branch = 'front'
-                    def dockerImageTag = "${env.BUILD_NUMBER}"
-
-                withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
-                usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                    sh """
-                    git config user.name "$GITHUB_USER"
-                    git config user.email "yj.lee991228@gmail.com"
-                    git checkout front
-                    git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
-                    git push origin front
-                    curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: DockerImageTag fourstit-front-${env.BUILD_NUMBER}", "head":"front", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
+                    usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                            sh """
+                            git config user.name "$GITHUB_USER"
+                            git config user.email "yj.lee991228@gmail.com"
+                            git checkout front
+                            git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
+                            git push origin front
+                            curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: DockerImgTag fourstit-front-${DOCKER_IMAGE_TAG}", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
+                            """
                     }
                     echo "[Samdasu-Front] PR 생성 완료"
                 }
@@ -135,7 +136,7 @@ pipeline {
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
-                Docker 이미지 태그 생성: fourstit-front-${env.BUILD_NUMBER}
+                Docker 이미지 태그 생성: fourstit-front-${DOCKER_IMAGE_TAG}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
