@@ -104,6 +104,28 @@ pipeline {
                 }
             }
         }
+        
+        stage('Create Auto PR') {
+            steps {
+                script {
+                    def branch = 'front'
+                    def dockerImageTag = "${env.BUILD_NUMBER}"
+
+                withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
+                usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                    sh """
+                    git config user.name "$GITHUB_USER"
+                    git config user.email "yj.lee991228@gmail.com"
+                    git checkout front
+                    git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
+                    git push origin front
+                    curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: DockerImageTag ${dockerImageTag}", "head":"front", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
+                    """
+                    }
+                    echo "[Samdasu-Front] PR 생성 완료"
+                }
+            }
+        }
     }
     
     post {
