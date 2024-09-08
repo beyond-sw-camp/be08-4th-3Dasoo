@@ -1,5 +1,4 @@
 // node:18.20.4 or node:18.20.4-alpine3.20
-
 pipeline {
     agent {
         kubernetes {
@@ -38,32 +37,22 @@ pipeline {
     stages {
         stage('Checkout') {
             steps{
-                git branch: 'main', 
+                git branch: 'front', 
                     credentialsId: 'github_access_ssh_samdasu',
                     url: 'git@github.com:uzz99/Samdasu-Devops.git'
             }
         }
 
-        stage('Npm Install') {
+        stage('Npm install & Build Frontend') {
             when {
                 changeset "devopsFront/**"
             }
             steps {
                 container('node') {
                     dir('devopsFront') {
-                        sh 'npm i'
-                    }
-                }
-            }
-        }
-
-        stage('Build Frontend') {
-            when {
-                changeset "devopsFront/**"
-            }
-            steps {
-                container('node') {
-                    dir('devopsFront') {
+                        // cache(path: 'node_modules') {
+                        sh 'npm install'
+                        // }
                         sh 'npm run build'
                     }
                 }
@@ -71,6 +60,9 @@ pipeline {
         }
 
         stage('Docker Image Build') {
+            when {
+                changeset "devopsFront/**"
+            }
             steps {
                 container('docker') {
                     script {
@@ -97,6 +89,9 @@ pipeline {
             }
         }
         stage('Deployment'){
+            when {
+                changeset "devopsFront/**"
+            }
             steps{
                 container('kubectl'){
                     script {
@@ -119,6 +114,7 @@ pipeline {
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
+                Docker 이미지 태그 생성: fourstit-front-${env.BUILD_NUMBER}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
