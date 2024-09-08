@@ -117,7 +117,10 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
                 usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh """
+                    git config user.name "$GITHUB_USER"
+                    git config user.email "yj.lee991228@gmail.com"
                     git checkout back
+                    git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
                     git push origin back
                     curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImageTag ${dockerImageTag}", "head":"back", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
                     """
