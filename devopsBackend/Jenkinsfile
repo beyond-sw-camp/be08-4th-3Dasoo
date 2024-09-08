@@ -123,7 +123,7 @@ pipeline {
                         git checkout ${GIT_BRANCH}
                         git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/uzz99/Samdasu-Devops.git
                         git push origin ${GIT_BRANCH}
-                        curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImgTag fourstit-back-${DOCKER_IMAGE_TAG}", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
+                        curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: Updated Docker Tag to \\"fourstit-back-${DOCKER_IMAGE_TAG}\\"", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
                         """
                     }
                     echo "[Samdasu-Back] PR 생성 완료"
