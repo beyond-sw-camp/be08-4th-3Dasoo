@@ -114,11 +114,13 @@ pipeline {
                     def branch = 'back'
                     def dockerImageTag = "${env.BUILD_NUMBER}"
 
+                withCredentials([usernamePassword(credentialsId: 'github_personal_access_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
                     sh '''
-                    git checkout -b back
+                    git checkout back
                     git push origin back
-                    curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImageTag ${env.BUILD_NUMBER}", "head":"back", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
+                    curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Backend] Auto PR: DockerImageTag ${dockerImageTag}", "head":"back", "base":"main"}' https://api.github.com/repos/uzz99/Samdasu-Devops/pulls
                     '''
+                    }
                     echo "PR 생성 완료"
                 }
             }
