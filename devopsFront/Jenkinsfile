@@ -120,6 +120,7 @@ pipeline {
                             git config user.email "yj.lee991228@gmail.com"
                             git checkout front
                             git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/beyond-sw-camp/be08-4th-3Dasoo.git
+                            git pull origin front --rebase
                             git push origin front
                             curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: Updated Docker Tag to \\"fourstit-front-${DOCKER_IMAGE_TAG}\\"", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/beyond-sw-camp/be08-4th-3Dasoo/pulls
                             """
