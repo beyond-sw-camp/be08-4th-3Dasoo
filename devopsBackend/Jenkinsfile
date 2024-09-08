@@ -73,6 +73,7 @@ pipeline {
                 container('docker'){
                     script {
                         echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
+                        echo "Docker Build Test"
 
                         sh 'docker logout'
                         withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
