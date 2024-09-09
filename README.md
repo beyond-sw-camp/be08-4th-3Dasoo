@@ -156,8 +156,9 @@
 
 <details>
   <summary>전체 파이프 라인</summary>
+	
+![image](https://github.com/user-attachments/assets/d1040bed-817b-4996-8992-55aaef264b00)
 
-![image](https://github.com/user-attachments/assets/cb40a8ca-ea51-47e1-bb85-09f49fb421a2)
 </details>
 
 
