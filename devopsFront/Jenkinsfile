@@ -38,7 +38,7 @@ pipeline {
     environment {
         GIT_BRANCH = 'front'
         DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
-        DISCORD_WEBHOOK = credentials('discord-webhook')
+        DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
     }
 
     stages {
@@ -46,7 +46,7 @@ pipeline {
             steps{
                 git branch: "${GIT_BRANCH}", 
                     credentialsId: 'github_access_ssh_samdasu',
-                    url: 'git@github.com:uzz99/Samdasu-Devops.git'
+                    url: 'git@github.com:beyond-sw-camp/be08-4th-3Dasoo.git'
             }
         }
 
@@ -118,10 +118,10 @@ pipeline {
                             sh """
                             git config user.name "$GITHUB_USER"
                             git config user.email "yj.lee991228@gmail.com"
-                            git checkout front
+                            git checkout ${GIT_BRANCH}
                             git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/beyond-sw-camp/be08-4th-3Dasoo.git
-                            git pull origin front --rebase
-                            git push origin front
+                            git pull origin ${GIT_BRANCH} --rebase
+                            git push origin ${GIT_BRANCH}
                             curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: Updated Docker Tag to \\"fourstit-front-${DOCKER_IMAGE_TAG}\\"", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/beyond-sw-camp/be08-4th-3Dasoo/pulls
                             """
                     }
@@ -133,12 +133,12 @@ pipeline {
     
     post {
         success {
-            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
-                Docker 이미지 태그 생성: fourstit-front-${DOCKER_IMAGE_TAG}
+                관련 Docker 이미지 태그: fourstit-front-${DOCKER_IMAGE_TAG}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
@@ -147,7 +147,7 @@ pipeline {
         }
 
         failure {
-            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
