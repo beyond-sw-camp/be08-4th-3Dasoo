@@ -4,8 +4,6 @@ spring:
 
   datasource:
     url: jdbc:mariadb://mariadb-service:3306/fourstit
-    #    url: jdbc:mariadb://127.0.0.1:3306/fourstit
-#      url: jdbc:mariadb://172.17.0.2:3306/fourstit
     username: samdasu
     password: s1234
     driver-class-name: org.mariadb.jdbc.Driver
