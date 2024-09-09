@@ -38,6 +38,17 @@
 
 <br>
 
+## ✨ CI/CD 필요성
+
+1. **개발 속도 및 효율성 향상**<br>
+- 반복 작업을 자동화하여 개발자들이 핵심 기능에 집중할 수 있게 만듦<br>
+2. **품질 및 안정성 개선**<br>
+- 지속적인 통합과 테스트를 통해 코드 품질 보장 및 안정성 확보<br>
+3. **협업 효율성 증가**<br>
+- 프론트엔드와 백엔드 각각에 맞춘 파이프라인을 통해 병렬 작업 가능
+
+<br>
+
 ## ⚙개발 환경
 ### [DevOps]
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white) ![Jenkins](https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white)
