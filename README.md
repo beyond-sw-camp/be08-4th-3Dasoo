@@ -1,4 +1,4 @@
-
+![image](https://github.com/user-attachments/assets/6d0f12cd-8cb1-47f7-8886-10ef146b032c)
 
 # 4stIT
 > ### Team - 3dasu
@@ -99,11 +99,19 @@
 
 <br>
 
-## 📑 시스템 아키텍쳐
+## 📑 CI/CD 계획서
 ![system](https://github.com/user-attachments/assets/a6ef4aa1-4238-4715-b2da-ca0a8e6758cc)
 
 ```
-
+1. 개발자가 코드를 작성 및 테스트한 후, 변경사항을 github로 push
+2. 변경사항이 Git에 push 되면 Webhook이 이벤트를 감지하고 해당 이벤트를 처리하기 위해서 HTTP 요청
+3. Webhook에서 JENKINS로 요청을 전송
+	3-1. [Backend] 요청을 통해 Front pipeline이 동작하게 되고, Gradle 빌드하여 jar 파일을 생성
+	3-2. [Frontend] 요청을 통해 Front pipeline이 동작하게 되고, npm 빌드를 통해 dist 폴더를 생성
+4. 각 빌드 결과물은 Dockerfile를 사용하여 Docker image로 생성
+5. 생성된 Docker image를 DockerHub로 push
+6. 쿠버네티스 클러스터는 Docker image를 pull하고, 이를 각각의 Pod로 배포
+	이 때, 각 Pod는 ReplicaSet으로 관리 됨
 ```
 
 <br>
@@ -119,6 +127,38 @@
 <br>
 
 ## 📑 테스트
+
+<details>
+  <summary>(전)로고 타이틀</summary>
+ 
+![image](https://github.com/user-attachments/assets/314a95a9-9cf1-44df-aff4-a2b253ab3fdd)
+</details>
+
+<details>
+  <summary>도커 이미지 생성</summary>
+ 
+![image](https://github.com/user-attachments/assets/9d00fe57-705e-4d88-88d6-0cd022eb43b8)
+</details>
+
+<details>
+  <summary>도커 허브에 이미지 push</summary>
+ 
+![image](https://github.com/user-attachments/assets/fad64940-509b-4d99-a5be-95c05380cbf4)
+![image](https://github.com/user-attachments/assets/002dccd6-060f-460a-9be3-db484ea1bc74)
+
+</details>
+
+<details>
+  <summary>(후)로고 타이틀 변화</summary>
+
+![image](https://github.com/user-attachments/assets/2da54d09-56b5-424c-a0de-701f78e7d1a6)
+</details>
+
+<details>
+  <summary>전체 파이프 라인</summary>
+
+![image](https://github.com/user-attachments/assets/cb40a8ca-ea51-47e1-bb85-09f49fb421a2)
+</details>
 
 
 <br>
