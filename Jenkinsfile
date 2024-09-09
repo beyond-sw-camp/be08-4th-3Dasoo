@@ -1,4 +1,3 @@
-// node:18.20.4 or node:18.20.4-alpine3.20
 pipeline {
     agent {
         kubernetes {
@@ -11,6 +10,11 @@ pipeline {
               containers:
               - name: node
                 image: node:18.20.4-alpine3.20
+                command:
+                - cat
+                tty: true
+              - name: gradle
+                image: gradle:8.10.0-jdk21
                 command:
                 - cat
                 tty: true
@@ -36,20 +40,11 @@ pipeline {
     }
 
     environment {
-        GIT_BRANCH = 'front'
+        DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
         DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
-        DISCORD_WEBHOOK = credentials('discord-webhook')
     }
 
     stages {
-        stage('Checkout') {
-            steps{
-                git branch: "${GIT_BRANCH}", 
-                    credentialsId: 'github_access_ssh_samdasu',
-                    url: 'git@github.com:beyond-sw-camp/be08-4th-3Dasoo.git'
-            }
-        }
-
         stage('Npm install & Build Frontend') {
             when {
                 changeset "devopsFront/**"
@@ -57,7 +52,6 @@ pipeline {
             steps {
                 container('node') {
                     dir('devopsFront') {
-                        echo "Build devopsFront Test"
                         sh 'npm install'
                         sh 'npm run build'
                     }
@@ -65,27 +59,37 @@ pipeline {
             }
         }
 
-        stage('Docker Image Build') {
+        stage('Build Backend') {
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps {
+                container('gradle') {
+                    dir('devopsBackend') {
+                        sh 'chmod +x ./gradlew'
+                        sh './gradlew clean build -x test'
+                    }
+                }
+            }
+        }
+
+        stage('Docker Image Build Frontend') {
             when {
                 changeset "devopsFront/**"
             }
             steps {
                 container('docker') {
                     script {
-                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
-                        echo "Docker Build Test"
-
                         sh 'docker logout'
-                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
+                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access',
                             usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
-                                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                            sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
                         }
 
                         dir('devopsFront') {
                             withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
-                                sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG ./'
-                                sh 'docker image inspect uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
-                                sh 'docker push uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
+                                sh "docker build --no-cache -t uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG ./"
+                                sh "docker push uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG"
                             }
                         }
                         sh 'docker logout'
@@ -93,32 +97,66 @@ pipeline {
                 }
             }
         }
-        stage('Deployment'){
+
+        stage('Docker Image Build Backend') {
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps {
+                container('docker') {
+                    script {
+                        sh 'docker logout'
+                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access',
+                            usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
+                            sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                        }
+
+                        dir('devopsBackend') {
+                            withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
+                                sh "docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG ./"
+                                sh "docker push uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG"
+                            }
+                        }
+                        sh 'docker logout'
+                    }
+                }
+            }
+        }
+
+        stage('Deployment Frontend') {
             when {
                 changeset "devopsFront/**"
             }
-            steps{
-                container('kubectl'){
+            steps {
+                container('kubectl') {
                     script {
-                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
-                        
-                        withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
-                            sh 'kubectl set image deploy fourstit-front-deploy nginx=uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG -n default'
-                        }
+                        sh "kubectl set image deploy fourstit-front-deploy nginx=uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG -n default"
+                    }
+                }
+            }
+        }
+
+        stage('Deployment Backend') {
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps {
+                container('kubectl') {
+                    script {
+                        sh "kubectl set image deploy fourstit-back-deploy fourstit-back=uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG  -n default"
                     }
                 }
             }
         }
     }
-    
+
     post {
         success {
-            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
                 실행 시간 : ${currentBuild.duration / 1000}s
-                관련 Docker 이미지 태그: fourstit-front-${DOCKER_IMAGE_TAG}
                 """,
                 result: currentBuild.currentResult,
                 title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
@@ -127,7 +165,7 @@ pipeline {
         }
 
         failure {
-            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
