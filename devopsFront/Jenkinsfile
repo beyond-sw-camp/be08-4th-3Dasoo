@@ -38,7 +38,7 @@ pipeline {
     environment {
         GIT_BRANCH = 'front'
         DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
-        DISCORD_WEBHOOK = credentials('samdasu-discord-webhook')
+        DISCORD_WEBHOOK = credentials('discord-webhook')
     }
 
     stages {
@@ -133,7 +133,7 @@ pipeline {
     
     post {
         success {
-            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
@@ -147,7 +147,7 @@ pipeline {
         }
 
         failure {
-            withCredentials([string(credentialsId: 'samdasu-discord-webhook', variable: 'DISCORD')]) {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
                 discordSend description: """
                 제목 : ${currentBuild.displayName}
                 결과 : ${currentBuild.result}
