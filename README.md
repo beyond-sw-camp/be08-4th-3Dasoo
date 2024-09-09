@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/6d0f12cd-8cb1-47f7-8886-10ef146b032c)
+
 
 # 4stIT
 > ### Team - 3dasu
