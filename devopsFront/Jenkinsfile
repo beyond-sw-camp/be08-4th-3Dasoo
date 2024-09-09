@@ -109,26 +109,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Create Auto PR') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'github_personal_access_token',
-                    usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                            sh """
-                            git config user.name "$GITHUB_USER"
-                            git config user.email "yj.lee991228@gmail.com"
-                            git checkout ${GIT_BRANCH}
-                            git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/beyond-sw-camp/be08-4th-3Dasoo.git
-                            git pull origin ${GIT_BRANCH} --rebase
-                            git push origin ${GIT_BRANCH}
-                            curl -u $GITHUB_USER:$GITHUB_TOKEN -X POST -d '{"title":"[Frontend] Auto PR: Updated Docker Tag to \\"fourstit-front-${DOCKER_IMAGE_TAG}\\"", "head":"${GIT_BRANCH}", "base":"main"}' https://api.github.com/repos/beyond-sw-camp/be08-4th-3Dasoo/pulls
-                            """
-                    }
-                    echo "[Samdasu-Front] PR 생성 완료"
-                }
-            }
-        }
     }
     
     post {
