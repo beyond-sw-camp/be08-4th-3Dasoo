@@ -25,7 +25,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*")//test
 @Slf4j
 public class MainController {
     private final UserRepository userRepository;
