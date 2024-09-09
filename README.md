@@ -124,6 +124,10 @@
 <br>
 
 ## 📆 WBS
+[WBS](https://docs.google.com/spreadsheets/d/1YytUhICDiLV1lWI4rCTrFqUB8M-SIeyeQkFrIw2cKj0/edit?gid=0#gid=0)
+<br><br>
+![image](https://github.com/user-attachments/assets/a38a7716-68b9-451f-a462-38d5e0bf1fad)
+
 
 
 <br>
