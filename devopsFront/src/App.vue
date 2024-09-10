@@ -17,7 +17,7 @@ onMounted(() => {
   const router = useRouter();
 
   axios
-    .get('http://localhost:8080/api/server-status')
+    .get('http://localhost:30031/api/server-status')
     .then((response) => {
       const previousUuid = localStorage.getItem('serverUuid');
       const currentUuid = response.data.serverUuid;
