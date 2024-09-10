@@ -11,8 +11,8 @@
 
 [장현준]|[김은경]|[이유진]|[이지정]|[정수진]|[최규범]|
 ------|------|------|------------------|--------------------|------|
- |  |  | ![image](https://github.com/user-attachments/assets/b5840b43-d0ee-4b5f-bed6-2960916fb455)
  |  |  | 
+ | ![image](https://github.com/user-attachments/assets/b5840b43-d0ee-4b5f-bed6-2960916fb455) |  | 
 
 <br>
 
