@@ -4,14 +4,14 @@
 > ### Team - 3dasu
 
 
-
 <br>
 
 ## 👨‍👩‍👧‍👦 팀원
 
-[장현준]|[김은경]|[이유진]|[이지정]|[정수진]|[최규범]|
+[👑장현준]|[김은경]|[이유진]|[이지정]|[정수진]|[최규범]|
 ------|------|------|------------------|--------------------|------|
- |  |  |  |  |  | 
+| <img src="https://github.com/user-attachments/assets/8afa7621-a9e2-4b89-9e52-de3da3c42c72" width="180px"/> | ![image](https://github.com/user-attachments/assets/9ee4a459-7e61-494f-8c1b-63255c2526cb)|<img src="https://github.com/user-attachments/assets/95724a10-1762-4158-8968-1fe63925a44a" width="175px"/>| ![image](https://github.com/user-attachments/assets/f131ae95-f7a7-4de5-8708-88e66c5cfe80)| ![image](https://github.com/user-attachments/assets/68cdaaf2-67c0-4976-9335-d2d94e88f91b) | ![image](https://github.com/user-attachments/assets/15a8f0f0-f74d-428e-a77a-e7718c8dd25c)
+|<div align="center">[<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/mabem95)</div>| <div align="center"><img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"></div> | [<div align="center"><img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/uzz99)</div> | <div align="center">[<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/leejijung)</div> | <div align="center">[<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/Sujina2024)</div> | <div align="center">[<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/jason-gb)</div> | 
 
 <br>
 
@@ -106,13 +106,318 @@
 1. 개발자가 코드를 작성 및 테스트한 후, 변경사항을 github로 push
 2. 변경사항이 Git에 push 되면 Webhook이 이벤트를 감지하고 해당 이벤트를 처리하기 위해서 HTTP 요청
 3. Webhook에서 JENKINS로 요청을 전송
-	3-1. [Backend] 요청을 통해 Front pipeline이 동작하게 되고, Gradle 빌드하여 jar 파일을 생성
+	3-1. [Backend] 요청을 통해 Back pipeline이 동작하게 되고, Gradle 빌드하여 jar 파일을 생성
 	3-2. [Frontend] 요청을 통해 Front pipeline이 동작하게 되고, npm 빌드를 통해 dist 폴더를 생성
 4. 각 빌드 결과물은 Dockerfile를 사용하여 Docker image로 생성
 5. 생성된 Docker image를 DockerHub로 push
 6. 쿠버네티스 클러스터는 Docker image를 pull하고, 이를 각각의 Pod로 배포
 	이 때, 각 Pod는 ReplicaSet으로 관리 됨
 ```
+
+<br>
+
+<details>
+  <summary>backend pipeline</summary>
+
+```
+pipeline {
+    agent {
+        kubernetes {
+            yaml '''
+            apiVersion: v1
+            kind: Pod
+            metadata: 
+              name: jenkins-agent
+            spec:
+              containers:
+              - name: gradle
+                image: gradle:8.10.0-jdk21
+                command:
+                - cat
+                tty: true
+              - name: docker
+                image: docker:27.2.0-alpine3.20
+                command:
+                - cat
+                tty: true
+                volumeMounts:
+                - mountPath: "/var/run/docker.sock"
+                  name: docker-socket
+              - name: kubectl
+                image: gcr.io/cloud-builders/kubectl
+                command:
+                - cat
+                tty: true
+              volumes:
+              - name: docker-socket
+                hostPath:
+                  path: "/var/run/docker.sock"
+            '''
+        }
+    }
+
+    environment {
+        GIT_BRANCH = 'back'
+        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DISCORD_WEBHOOK = credentials('discord-webhook')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps{
+                git branch: "${GIT_BRANCH}", 
+                    credentialsId: 'github_access_ssh_samdasu',
+                    url: 'git@github.com:uzz99/Samdasu-Devops.git'
+            }
+        }
+
+        stage('Build Backend') {
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps {
+                container('gradle'){
+                    dir('devopsBackend') {
+                        echo "Build devopsBackend Test"
+
+                        sh 'chmod +x ./gradlew'
+                        sh './gradlew clean build -x test'
+                    }
+                }
+            }
+        }
+
+        stage('Docker Image Build'){
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps {
+                container('docker'){
+                    script {
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
+                        echo "Docker Build Test"
+
+                        sh 'docker logout'
+                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
+                            usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
+                                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                        }
+
+                        dir('devopsBackend') {
+                            withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
+                                sh 'docker -v'
+                                sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG ./'
+                                sh 'docker image inspect uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG'
+                                sh 'docker push uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG'
+                            }
+                        }
+                        sh 'docker logout'
+                    }
+                }
+            }
+        }
+
+        stage('Deployment'){
+            when {
+                changeset "devopsBackend/**"
+            }
+            steps{
+                container('kubectl'){
+                    script {
+
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
+                        
+                        withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
+                            sh 'kubectl set image deploy fourstit-back-deploy fourstit-back=uzz99/samdasu_repo:fourstit-back-$DOCKER_IMAGE_TAG -n default'
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                Docker 이미지 태그 생성: fourstit-back-${DOCKER_IMAGE_TAG}
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+
+        failure {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+    }
+}
+```
+
+</details>
+
+
+<details>
+  <summary>front pipeline</summary>
+
+```
+pipeline {
+    agent {
+        kubernetes {
+            yaml '''
+            apiVersion: v1
+            kind: Pod
+            metadata: 
+              name: jenkins-agent
+            spec:
+              containers:
+              - name: node
+                image: node:18.20.4-alpine3.20
+                command:
+                - cat
+                tty: true
+              - name: docker
+                image: docker:27.2.0-alpine3.20
+                command:
+                - cat
+                tty: true
+                volumeMounts:
+                - mountPath: "/var/run/docker.sock"
+                  name: docker-socket
+              - name: kubectl
+                image: gcr.io/cloud-builders/kubectl
+                command:
+                - cat
+                tty: true
+              volumes:
+              - name: docker-socket
+                hostPath:
+                  path: "/var/run/docker.sock"
+            '''
+        }
+    }
+
+    environment {
+        GIT_BRANCH = 'front'
+        DOCKER_IMAGE_TAG = "${env.BUILD_NUMBER}"
+        DISCORD_WEBHOOK = credentials('discord-webhook')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps{
+                git branch: "${GIT_BRANCH}", 
+                    credentialsId: 'github_access_ssh_samdasu',
+                    url: 'git@github.com:beyond-sw-camp/be08-4th-3Dasoo.git'
+            }
+        }
+
+        stage('Npm install & Build Frontend') {
+            when {
+                changeset "devopsFront/**"
+            }
+            steps {
+                container('node') {
+                    dir('devopsFront') {
+                        echo "Build devopsFront Test"
+                        sh 'npm install'
+                        sh 'npm run build'
+                    }
+                }
+            }
+        }
+
+        stage('Docker Image Build') {
+            when {
+                changeset "devopsFront/**"
+            }
+            steps {
+                container('docker') {
+                    script {
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
+                        echo "Docker Build Test"
+
+                        sh 'docker logout'
+                        withCredentials([usernamePassword(credentialsId: 'samdasu-dockerhub-access', 
+                            usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD' )]){
+                                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                        }
+
+                        dir('devopsFront') {
+                            withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
+                                sh 'docker build --no-cache -t uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG ./'
+                                sh 'docker image inspect uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
+                                sh 'docker push uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG'
+                            }
+                        }
+                        sh 'docker logout'
+                    }
+                }
+            }
+        }
+        stage('Deployment'){
+            when {
+                changeset "devopsFront/**"
+            }
+            steps{
+                container('kubectl'){
+                    script {
+                        echo "DockerImageTag : ${DOCKER_IMAGE_TAG}"
+                        
+                        withEnv(["DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"]){
+                            sh 'kubectl set image deploy fourstit-front-deploy nginx=uzz99/samdasu_repo:fourstit-front-$DOCKER_IMAGE_TAG -n default'
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                관련 Docker 이미지 태그: fourstit-front-${DOCKER_IMAGE_TAG}
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+
+        failure {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'DISCORD')]) {
+                discordSend description: """
+                제목 : ${currentBuild.displayName}
+                결과 : ${currentBuild.result}
+                실행 시간 : ${currentBuild.duration / 1000}s
+                """,
+                result: currentBuild.currentResult,
+                title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                webhookURL: "${DISCORD}"
+            }
+        }
+    }
+}
+```
+
+</details>
 
 <br>
 
@@ -156,8 +461,9 @@
 
 <details>
   <summary>전체 파이프 라인</summary>
+	
+![image](https://github.com/user-attachments/assets/d1040bed-817b-4996-8992-55aaef264b00)
 
-![image](https://github.com/user-attachments/assets/cb40a8ca-ea51-47e1-bb85-09f49fb421a2)
 </details>
 
 
@@ -177,4 +483,16 @@
 <br><br>
 ![image](https://github.com/user-attachments/assets/697d4c2a-1b43-417f-87b9-67fdefb3c5c5)
 
+<br>
+
+
+## :memo: 회고
+|&nbsp;&nbsp;팀&nbsp;원&nbsp;&nbsp;&nbsp;|회고록|
+|:---:|---|
+|장현준|이번 데브옵스 프로젝트를 하면서 도커, 쿠버네티스, 젠킨스를 처음 경험해보는 것이다 보니 git을 처음 경험했을 때처럼 익숙하지 않고 생각이상으로 어려웠다. 도커를 통해 이미지를 생성하고, 쿠버네티스를 이용하여 생성한 이미지를 바탕으로 deploy와 service를 생성하는 것 까지는 쉽게 이해했지만, 젠킨스를 통한 파이프라인을 구성하고 배포를 하는 과정이 어렵게 다가왔다. 하지만 팀원들과 서로 공부해가며 잘 이해했던 뜻 깊은 시간이었다.|
+|김은경||
+|이유진|이번 프로젝트를 통해 Docker, Kubernetes 등 컨테이너 기술에 관해 많이 배우고 성장할 수 있었습니다. 또한 Jenkins를 활용해 CI/CD를 구축해 보며 DevOps에 관해 더 잘 이해할 수 있었던, 의미 있는 프로젝트였습니다. 여건이 된다면 이후에는 더 발전한 개발 환경을 구축해 보고 싶습니다. 여러모로 고생한 팀원들에게 감사드립니다.|
+|이지정|데브옵스라는 것 자체가 처음이다 보니까 생소하고 어렵게 느껴졌었다. 물론 지금도 쉬운...건 아니지만 팀원들과 수업 내용을 토대로 한번씩 해보는 것을 목표를 가지고 공부를 한 덕분에 수업시간에 이해되지 않았던 내용들이 이해되었던 소중한 시간이었던 것 같다. 또한, 어려운 부분이나 오류 내용을 팀원들에게 말하면 팀원들이 많은 도움을 주어서 고생이 덜 했었다. 아직도 참 배울 것이 많고 공부해야 될 부분이 많은 것 같다.|
+|정수진|데스옵스 정말 만만치 않은... 정말 어려웠지만 너무나 감사하게 팀원분들이 옆에서 도와주셔서 개인적으로 많이 배울 수 있는 시간이었습니다. 모든 팀원분들에게 감사드리고 앞으로 최종까지 열심히 화이팅이요! |
+|최규범|데브옵스 프로젝트를 시작하며 처음엔 이미 다 완성되어 있는 프로젝트를 통합하고 배포하는 것이 크게 어렵겠나? 라는 생각을 진행했다가 정말 큰 벽을 느껴버린 그런 프로젝트였습니다. 그래도 한번이라도 이런 경험을 할 수 있어서 좋았고 앞으로 더 정진하겠습니다...그런 어렵고 힘든 상황을 팀원들 덕분에 해결해 나아갈 수 있어 팀원들에게 매우 감사와 영광을 돌립니다.|
 <br>
