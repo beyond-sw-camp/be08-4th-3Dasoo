@@ -35,7 +35,7 @@ public class MainController {
 
     @GetMapping("/jenkinsTest")
     public ResponseEntity<String> jenkinsTest() {
-        return ResponseEntity.ok("jenkinsTest");
+        return ResponseEntity.ok("jenkins");
     }
 
     @PostMapping("/login")
