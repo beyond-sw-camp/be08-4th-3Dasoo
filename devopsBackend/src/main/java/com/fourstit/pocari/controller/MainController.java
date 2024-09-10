@@ -33,6 +33,11 @@ public class MainController {
     private final BookmarkRepository bookmarkRepository;
     private final CategoryRepository categoryRepository;
 
+    @GetMapping("/jenkinsTest")
+    public ResponseEntity<String> jenkinsTest() {
+        return ResponseEntity.ok("jenkinsTest");
+    }
+
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody UserDto userDto) {
         // 사용자의 ID가 존재하는지 확인
