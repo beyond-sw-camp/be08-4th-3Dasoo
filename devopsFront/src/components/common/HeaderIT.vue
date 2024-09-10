@@ -2,7 +2,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <nav class="navbar navbar-expand-lg bg-navbar fixed-top">
     <div class="container px-lg-5">
-      <RouterLink class="navbar-brand custom-navbar-brand" :to="{ name: 'main' }">4ST-IT-3DASU</RouterLink>
+      <RouterLink class="navbar-brand custom-navbar-brand" :to="{ name: 'main' }">4ST-IT</RouterLink>
       <button
         class="navbar-toggler"
         type="button"
